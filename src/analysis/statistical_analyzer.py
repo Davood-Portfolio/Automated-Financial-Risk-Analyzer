@@ -6,24 +6,27 @@ class StatisticalAnalyzer:
         self.db_path = db_path
 
     def load_data(self):
-        """Load historical prices from database into a Pandas DataFrame."""
         query = "SELECT asset_name, price_eur, timestamp FROM asset_prices"
         with sqlite3.connect(self.db_path) as conn:
             df = pd.read_sql_query(query, conn)
         return df
 
     def calculate_summary(self):
-        """Calculate basic statistics for each asset."""
         df = self.load_data()
         if df.empty:
-            return "No data available."
-        
-        # Group by asset and calculate mean and count
+            return pd.DataFrame()
         summary = df.groupby('asset_name')['price_eur'].agg(['mean', 'count', 'std'])
         summary.columns = ['Average Price', 'Record Count', 'Volatility (Std)']
         return summary
 
-if __name__ == "__main__":
-    analyzer = StatisticalAnalyzer()
-    print("--- Financial Statistics Summary ---")
-    print(analyzer.calculate_summary())
+    def calculate_correlation(self):
+        """Calculate how assets move together (Correlation Matrix)."""
+        df = self.load_data()
+        if df.empty or df['asset_name'].nunique() < 2:
+            return "Not enough data for correlation."
+        
+        # Pivot the data
+        pivot_df = df.pivot(index='timestamp', columns='asset_name', values='price_eur')
+        
+        # Calculate correlation
+        return pivot_df.corr()
