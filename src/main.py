@@ -5,6 +5,7 @@ from analysis.statistical_analyzer import StatisticalAnalyzer
 from analysis.forecaster import PriceForecaster
 from utils.risk_manager import RiskManager
 from utils.reporter import Reporter
+from utils.visualizer import Visualizer
 
 def main():
     fetcher = DataFetcher()
@@ -13,6 +14,7 @@ def main():
     forecaster = PriceForecaster()
     risk_mgr = RiskManager(volatility_threshold=2.0)
     reporter = Reporter()
+    visualizer = Visualizer()
 
     print("--- Financial Risk Analyzer Pro (AI Mode) ---")
     
@@ -30,7 +32,7 @@ def main():
         status = risk_mgr.evaluate_risk(asset, vol)
         print(f"Asset: {asset:10} | Volatility: {vol:.2f} | Status: {status}")
 
-    # 3. AI Price Forecasting & Data Preparation
+    # 3. AI Price Forecasting & Plotting
     print("\n[AI Price Forecast - Next Move]")
     df_history = analyzer.load_data()
     forecast_results = {}
@@ -45,6 +47,10 @@ def main():
             trend = "UP" if prediction > current_price else "DOWN"
             change = ((prediction - current_price) / current_price) * 100
             print(f"Asset: {asset:10} | Forecast: {prediction:.2f} EUR | Trend: {trend} ({change:+.4f}%)")
+            
+            # Save Visual Chart
+            plot_path = visualizer.plot_price_forecast(asset, asset_prices, prediction)
+            print(f"  -> Chart saved: {plot_path}")
         else:
             print(f"Asset: {asset:10} | Status: Insufficient data")
 
